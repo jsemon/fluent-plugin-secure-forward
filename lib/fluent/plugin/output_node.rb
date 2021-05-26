@@ -147,7 +147,8 @@ class Fluent::SecureForwardOutput::Node
     log.debug "generating ping"
     # ['PING', self_hostname, sharedkey\_salt, sha512\_hex(sharedkey\_salt + self_hostname + nonce + shared_key),
     #  username || '', sha512\_hex(auth\_salt + username + password) || '']
-    shared_key_hexdigest = Digest::SHA512.new.update(@shared_key_salt).update(@sender.self_hostname).update(@shared_key_nonce).update(@shared_key).hexdigest
+    #shared_key_hexdigest = Digest::SHA512.new.update(@shared_key_salt).update(@sender.self_hostname).update(@shared_key_nonce).update(@shared_key).hexdigest
+    shared_key_hexdigest = Digest::SHA512.new.update(@shared_key_salt).update(@sender.self_hostname).update(@shared_key).hexdigest
     ping = ['PING', @sender.self_hostname, @shared_key_salt, shared_key_hexdigest]
     if @authentication != ''
       password_hexdigest = Digest::SHA512.new.update(@authentication).update(@username).update(@password).hexdigest
@@ -162,7 +163,7 @@ class Fluent::SecureForwardOutput::Node
   def check_pong(message)
     log.debug "checking pong"
     # ['PONG', bool(authentication result), 'reason if authentication failed',
-    #  self_hostname, sha512\_hex(salt + self_hostname + nonce + sharedkey)]
+    #  self_hostname, sha512\_hex(salt + self_hostname + sharedkey)]
     unless message.size == 5 && message[0] == 'PONG'
       return false, 'invalid format for PONG message'
     end
@@ -176,7 +177,8 @@ class Fluent::SecureForwardOutput::Node
       return false, 'same hostname between input and output: invalid configuration'
     end
 
-    clientside = Digest::SHA512.new.update(@shared_key_salt).update(hostname).update(@shared_key_nonce).update(@shared_key).hexdigest
+    #clientside = Digest::SHA512.new.update(@shared_key_salt).update(hostname).update(@shared_key_nonce).update(@shared_key).hexdigest
+    clientside = Digest::SHA512.new.update(@shared_key_salt).update(hostname).update(@shared_key).hexdigest
     unless shared_key_hexdigest == clientside
       return false, 'shared key mismatch'
     end

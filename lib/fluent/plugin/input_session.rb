@@ -62,7 +62,8 @@ class Fluent::SecureForwardInput::Session
   def generate_helo
     log.debug "generating helo"
     # ['HELO', options(hash)]
-    [ 'HELO', {'nonce' => @shared_key_nonce, 'auth' => (@receiver.authentication ? @auth_key_salt : ''), 'keepalive' => @receiver.allow_keepalive } ]
+    #[ 'HELO', {'nonce' => @shared_key_nonce, 'auth' => (@receiver.authentication ? @auth_key_salt : ''), 'keepalive' => @receiver.allow_keepalive } ]
+    [ 'HELO', {'auth' => (@receiver.authentication ? @auth_key_salt : ''), 'keepalive' => @receiver.allow_keepalive } ]
   end
 
   def check_ping(message)
@@ -79,7 +80,8 @@ class Fluent::SecureForwardInput::Session
                  else
                    @receiver.shared_key
                  end
-    serverside = Digest::SHA512.new.update(shared_key_salt).update(hostname).update(@shared_key_nonce).update(shared_key).hexdigest
+    #serverside = Digest::SHA512.new.update(shared_key_salt).update(hostname).update(@shared_key_nonce).update(shared_key).hexdigest
+    serverside = Digest::SHA512.new.update(shared_key_salt).update(hostname).update(shared_key).hexdigest
     if shared_key_hexdigest != serverside
       log.warn "Shared key mismatch from '#{hostname}'"
       return false, 'shared_key mismatch'
@@ -114,7 +116,8 @@ class Fluent::SecureForwardInput::Session
                  else
                    @receiver.shared_key
                  end
-    shared_key_hex = Digest::SHA512.new.update(reason_or_salt).update(@receiver.self_hostname).update(@shared_key_nonce).update(shared_key).hexdigest
+    #shared_key_hex = Digest::SHA512.new.update(reason_or_salt).update(@receiver.self_hostname).update(@shared_key_nonce).update(shared_key).hexdigest
+    shared_key_hex = Digest::SHA512.new.update(reason_or_salt).update(@receiver.self_hostname).update(shared_key).hexdigest
     [ 'PONG', true, '', @receiver.self_hostname, shared_key_hex ]
   end
 
